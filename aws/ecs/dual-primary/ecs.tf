@@ -82,24 +82,33 @@ resource "aws_ecs_task_definition" "web-2" {
 
 # ECS Service
 resource "aws_ecs_service" "web_service-1" {
-  name            = "web-service"
+  name            = "web-service-1"
   cluster         = aws_ecs_cluster.ecs_cluster.id
   task_definition = aws_ecs_task_definition.web-1.arn
   desired_count   = 1
   launch_type     = "EC2"
 
-  depends_on = [aws_lb.ecs_alb, aws_instance.ecs_instance]
-  # does it depends on the internal ALB?
+  load_balancer {
+    target_group_arn = aws_lb_target_group.tg_app1.arn
+    container_name   = "web"
+    container_port   = 8080
+  }
+
+  depends_on = [aws_lb.alb_int_1, aws_instance.ecs_instance]
 }
 
-# ECS Service
 resource "aws_ecs_service" "web_service-2" {
-  name            = "web-service"
+  name            = "web-service-2"
   cluster         = aws_ecs_cluster.ecs_cluster.id
   task_definition = aws_ecs_task_definition.web-2.arn
   desired_count   = 1
   launch_type     = "EC2"
 
-  depends_on = [aws_lb.ecs_alb, aws_instance.ecs_instance] 
-  # does it depends on the internal ALB?
+  load_balancer {
+    target_group_arn = aws_lb_target_group.tg_app2.arn
+    container_name   = "web"
+    container_port   = 9090
+  }
+
+  depends_on = [aws_lb.alb_int_2, aws_instance.ecs_instance]
 }

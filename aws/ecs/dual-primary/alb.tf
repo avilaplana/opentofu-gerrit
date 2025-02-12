@@ -23,17 +23,67 @@ resource "aws_lb_listener" "ecs_listener" {
   protocol          = "HTTP"
 
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.ecs_tg.arn
+    type = "forward"
+    forward {
+      target_group {
+        arn    = aws_lb_target_group.tg_app1.arn
+        weight = 50
+      }
+      target_group {
+        arn    = aws_lb_target_group.tg_app2.arn
+        weight = 50
+      }
+    }
   }
 }
 
-
-##### should we have here 2 alb with listeners and targets
-resource "aws_lb" "internal_alb" {
-  name               = "internal-alb"
+# Internal ALB for App1 (alb-int-1)
+resource "aws_lb" "alb_int_1" {
+  name               = "alb-int-1"
   internal           = true
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
   subnets           = [aws_subnet.private_az1.id, aws_subnet.private_az2.id]
 }
+
+# Target Group for App1 (handled by alb-int-1)
+resource "aws_lb_target_group" "tg_app1" {
+  name        = "tg-app1"
+  port        = 8080
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.main.id
+  target_type = "ip"
+}
+
+
+# Internal ALB for App2 (alb-int-2)
+resource "aws_lb" "alb_int_2" {
+  name               = "alb-int-2"
+  internal           = true
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.alb_sg.id]
+  subnets           = [aws_subnet.private_az1.id, aws_subnet.private_az2.id]
+}
+
+# Target Group for App2 (handled by alb-int-2)
+resource "aws_lb_target_group" "tg_app2" {
+  name        = "tg-app2"
+  port        = 9090
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.main.id
+  target_type = "ip"
+}
+
+# Listener for alb-int-2 (Routes traffic to App2)
+resource "aws_lb_listener" "listener_int_2" {
+  load_balancer_arn = aws_lb.alb_int_2.arn
+  port              = 9090
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.tg_app2.arn
+  }
+}
+
+
