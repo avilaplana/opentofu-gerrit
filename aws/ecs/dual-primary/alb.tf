@@ -55,6 +55,18 @@ resource "aws_lb_target_group" "tg_app1" {
   target_type = "ip"
 }
 
+# Listener for alb-int-2 (Routes traffic to App2)
+resource "aws_lb_listener" "listener_int_1" {
+  load_balancer_arn = aws_lb.alb_int_1.arn
+  port              = 8080
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.tg_app1.arn
+  }
+}
+
 
 # Internal ALB for App2 (alb-int-2)
 resource "aws_lb" "alb_int_2" {
