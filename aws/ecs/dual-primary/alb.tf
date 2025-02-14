@@ -37,6 +37,7 @@ resource "aws_lb_listener" "ecs_listener" {
   }
 }
 
+#### app 1
 # Internal ALB for App1 (alb-int-1)
 resource "aws_lb" "alb_int_1" {
   name               = "alb-int-1"
@@ -49,7 +50,7 @@ resource "aws_lb" "alb_int_1" {
 # Target Group for App1 (handled by alb-int-1)
 resource "aws_lb_target_group" "tg_app1" {
   name        = "tg-app1"
-  port        = 8080
+  port        = 80
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
   target_type = "ip"
@@ -58,7 +59,7 @@ resource "aws_lb_target_group" "tg_app1" {
 # Listener for alb-int-2 (Routes traffic to App2)
 resource "aws_lb_listener" "listener_int_1" {
   load_balancer_arn = aws_lb.alb_int_1.arn
-  port              = 8080
+  port              = 80
   protocol          = "HTTP"
 
   default_action {
@@ -67,7 +68,7 @@ resource "aws_lb_listener" "listener_int_1" {
   }
 }
 
-
+#### app 2
 # Internal ALB for App2 (alb-int-2)
 resource "aws_lb" "alb_int_2" {
   name               = "alb-int-2"
@@ -80,7 +81,7 @@ resource "aws_lb" "alb_int_2" {
 # Target Group for App2 (handled by alb-int-2)
 resource "aws_lb_target_group" "tg_app2" {
   name        = "tg-app2"
-  port        = 9090
+  port        = 80
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
   target_type = "ip"
@@ -89,7 +90,7 @@ resource "aws_lb_target_group" "tg_app2" {
 # Listener for alb-int-2 (Routes traffic to App2)
 resource "aws_lb_listener" "listener_int_2" {
   load_balancer_arn = aws_lb.alb_int_2.arn
-  port              = 9090
+  port              = 80
   protocol          = "HTTP"
 
   default_action {
@@ -97,5 +98,4 @@ resource "aws_lb_listener" "listener_int_2" {
     target_group_arn = aws_lb_target_group.tg_app2.arn
   }
 }
-
 
